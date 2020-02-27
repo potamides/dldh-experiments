@@ -2,8 +2,37 @@ from glob import glob
 from os.path import join
 from itertools import chain
 from collections import Counter, defaultdict
+from scipy.stats import pearsonr
 
 POEM_FOLDER = "poems"
+
+def compute_correlation():
+    labels = defaultdict(list)
+    with open(join(POEM_FOLDER, "poems_200 - poems_200.tsv")) as f:
+        categories = f.readline().strip("\n").split("\t")[2:]
+
+        for line in f.readlines():
+            line = line.split("\t")
+            pair = tuple(line[0:2])
+            annotations = line[2:]
+            for idx, annotation in enumerate(annotations):
+                label = None
+                if annotation.strip() == "1":
+                    label = 1
+                elif annotation.strip() == "2":
+                    label = 2
+                else:
+                    label = 0
+                labels[categories[idx]].append(label)
+
+    pairs = list(labels.items())
+    tuples = [(pair1, pair2) for pair1 in pairs for pair2 in pairs if pair1 != pair2]
+
+    for (category1, labels1), (category2, labels2) in tuples:
+        print(f"* Pearson correlation between categories {category1} and {category2}: {pearsonr(labels1, labels2)[0]}")
+
+
+
 
 def compute_statistics():
     unique_poems = set()
@@ -72,3 +101,4 @@ def print_statistics(unique_poems, unique_tuples, category_counter):
 if __name__ == "__main__":
     statistics = compute_statistics()
     print_statistics(*statistics)
+    compute_correlation()
