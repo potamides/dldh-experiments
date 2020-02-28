@@ -7,11 +7,11 @@ from sentence_transformers import SentenceTransformer
 import logging
 import numpy as np
 __location__ = realpath(join(getcwd(), dirname(__file__)))
-path.append(join(__location__, "crowdGPPL", "python", "models"))
-from crowdGPPL.python.models.collab_pref_learning_svi import CollabPrefLearningSVI
+path.append(join(__location__, "code_crowdgppl", "python", "models"))
+from code_crowdgppl.python.models.collab_pref_learning_svi import CollabPrefLearningSVI
 
 EMBEDDINGS_FILE = join("embeddings", "embeddings.pkl")
-MODEL_FILE = join("models", "model.pkl")
+MODEL_FILE = join("models", "crowdgppl_model.pkl")
 POEM_FOLDER = "poems"
 
 
@@ -30,7 +30,7 @@ def embed_sentences(sentences):
     return embeddings
 
 
-def load_train_dataset():
+def load_dataset():
     person_train = []
     a1_sent_idx = []
     a2_sent_idx = []
@@ -80,12 +80,12 @@ def load_train_dataset():
 
 def train_model():
     # Train a model...
-    person_train_idx, a1_train, a2_train, sent_features, prefs_train, ndims = load_train_dataset()
+    person_train_idx, a1_train, a2_train, sent_features, prefs_train, ndims = load_dataset()
 
-    model = CollabPrefLearningSVI(
-        ndims, shape_s0=2, rate_s0=200, use_lb=True, use_common_mean_t=True, ls=None)
+    model = CollabPrefLearningSVI( ndims, shape_s0=2, rate_s0=200, use_lb=True,
+            use_common_mean_t=True, ls=None, verbose=True)
 
-    model.max_iter = 600
+    model.max_iter = 2000
 
     model.fit(person_train_idx, a1_train, a2_train, sent_features, prefs_train, optimize=False,
               use_median_ls=True, input_type='zero-centered')
@@ -98,15 +98,13 @@ def train_model():
         pickle.dump(model, fh)
 
 
-def get_crowd_score(sentences):
+def compute_scores():
+    if not exists(MODEL_FILE):
+        train_model()
     with open(MODEL_FILE, 'rb') as fh:
         model = pickle.load(fh)
-    sentences = [sent.replace("\n", " ").replace("_", "")
-                 for sent in sentences.split("\n\n")]
-    sentences = embed_sentences(sentences)
-    #print(model.predict_t().size)
-    return np.asarray(model.predict_t(sentences)).mean()
+        return model.predict_t()
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    train_model()
+    print(compute_scores())
