@@ -1,8 +1,8 @@
 [submodule "crowdGPPL"]
-	path = crowdGPPL
+	path = code_crowdgppl
 	url = git@github.com:UKPLab/tacl2018-preference-convincing.git
 	branch = crowdGPPL
 [submodule "gppl"]
-	path = gppl
+	path = code_gppl
 	url = git@github.com:UKPLab/tacl2018-preference-convincing.git
 	branch = master
