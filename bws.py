@@ -8,6 +8,7 @@ POEM_FOLDER = "poems"
 def load_dataset():
     most_positive = OrderedDict()
     most_negative = OrderedDict()
+    total = OrderedDict()
 
     for filename in glob(join(POEM_FOLDER, "*.tsv")):
         with open(filename, 'r') as f:
@@ -16,7 +17,7 @@ def load_dataset():
                 left_poem, right_poem = line[0:2]
                 labels = line[2:]
                 for poem in [left_poem, right_poem]:
-                    for counter in [most_positive, most_negative]:
+                    for counter in [most_positive, most_negative, total]:
                         if poem not in counter:
                             counter[poem] = 0
                 for label in labels:
@@ -27,13 +28,19 @@ def load_dataset():
                         most_positive[right_poem] += 1
                         most_negative[left_poem] += 1
 
-    return most_positive, most_negative
+                    if label.strip():
+                        total[right_poem] += 1
+                        total[left_poem] += 1
+
+
+    return most_positive, most_negative, total
 
 def compute_scores():
-    most_positive, most_negative = load_dataset()
+    most_positive, most_negative, total = load_dataset()
     scores = list()
     for poem in most_positive.keys():
-        scores.append(most_positive[poem] - most_negative[poem])
+        scores.append((most_positive[poem] - most_negative[poem]) /
+                      max((total[poem], 1)))
     return scores
 
 

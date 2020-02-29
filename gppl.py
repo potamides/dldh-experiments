@@ -8,11 +8,11 @@ import logging
 import numpy as np
 # this is necessary because gppl code uses absolute imports
 __location__ = realpath(join(getcwd(), dirname(__file__)))
-path.append(join(__location__, "code_crowdgppl", "python", "models"))
-from code_crowdgppl.python.models.collab_pref_learning_svi import CollabPrefLearningSVI
+path.append(join(__location__, "code_gppl", "python", "models"))
+from code_gppl.python.models.gp_pref_learning import GPPrefLearning
 
 EMBEDDINGS_FILE = join("embeddings", "embeddings.pkl")
-MODEL_FILE = join("models", "crowdgppl_model.pkl")
+MODEL_FILE = join("models", "gppl_model.pkl")
 POEM_FOLDER = "poems"
 
 
@@ -24,7 +24,7 @@ def embed_sentences(sentences):
                 return embeddings
 
     model = SentenceTransformer('bert-base-nli-mean-tokens')
-    embeddings = model.encode(sentences)
+    embeddings = np.asarray(model.encode(sentences))
     with open(EMBEDDINGS_FILE, 'wb') as f:
         pickle.dump((sentences, embeddings), f)
 
@@ -32,7 +32,6 @@ def embed_sentences(sentences):
 
 
 def load_dataset():
-    person_train = []
     a1_sent_idx = []
     a2_sent_idx = []
     prefs_train = []
@@ -60,7 +59,6 @@ def load_dataset():
                     else:
                         continue
 
-                    person_train.append(category)
                     a1_sent_idx.append(sents.index(line[0]))
                     a2_sent_idx.append(sents.index(line[1]))
 
@@ -68,27 +66,23 @@ def load_dataset():
 
     ndims = len(sent_features[0])
 
-    id2idx = dict([(v, k) for k, v in dict(
-        enumerate(np.unique(person_train))).items()])
-
-    person_train_idx = np.array([id2idx[id_] for id_ in person_train], dtype=int)
     a1_sent_idx = np.array(a1_sent_idx, dtype=int)
     a2_sent_idx = np.array(a2_sent_idx, dtype=int)
     prefs_train = np.array(prefs_train, dtype=float)
 
-    return person_train_idx, a1_sent_idx, a2_sent_idx, sent_features, prefs_train, ndims
+    return a1_sent_idx, a2_sent_idx, sent_features, prefs_train, ndims
 
 
 def train_model():
     # Train a model...
-    person_train_idx, a1_train, a2_train, sent_features, prefs_train, ndims = load_dataset()
+    a1_train, a2_train, sent_features, prefs_train, ndims = load_dataset()
 
-    model = CollabPrefLearningSVI( ndims, shape_s0=2, rate_s0=200, use_lb=True,
-            use_common_mean_t=True, ls=None)
+    model = GPPrefLearning(
+        ndims, shape_s0=2, rate_s0=200)
 
     model.max_iter = 2000
 
-    model.fit(person_train_idx, a1_train, a2_train, sent_features, prefs_train, optimize=False,
+    model.fit(a1_train, a2_train, sent_features, prefs_train, optimize=False,
               use_median_ls=True, input_type='zero-centered')
 
     logging.info("**** Completed training GPPL ****")
@@ -101,11 +95,11 @@ def train_model():
 
 def compute_scores():
     if not exists(MODEL_FILE):
-        print("CrowdGPPL: no trained model found")
+        print("GPPL: no trained model found")
         return 0
     with open(MODEL_FILE, 'rb') as fh:
         model = pickle.load(fh)
-        return model.predict_t()
+        return model.predict_f()[0]
 
 if __name__ == "__main__":
     train_model()
