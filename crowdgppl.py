@@ -11,6 +11,7 @@ import numpy as np
 __location__ = realpath(join(getcwd(), dirname(__file__)))
 path.append(join(__location__, "code_crowdgppl", "python", "models"))
 from code_crowdgppl.python.models.collab_pref_learning_svi import CollabPrefLearningSVI
+from metrics import get_alliteration_scores, get_readability_scores, get_rhyme_scores
 
 EMBEDDINGS_FILE = join("embeddings", "embeddings.pkl")
 MODEL_FILE = join("models", "crowdgppl_model.pkl")
@@ -25,7 +26,12 @@ def embed_sentences(sentences):
                 return embeddings
 
     model = SentenceTransformer('bert-base-nli-mean-tokens')
-    embeddings = model.encode(sentences)
+    rhyme_scores = get_rhyme_scores(sentences)
+    alliteration_scores = get_alliteration_scores(sentences)
+    readability_scores = get_readability_scores(sentences)
+    embeddings = np.concatenate((np.asarray(model.encode(sentences)),
+        rhyme_scores, alliteration_scores, readability_scores), axis=1)
+
     with open(EMBEDDINGS_FILE, 'wb') as f:
         pickle.dump((sentences, embeddings), f)
 
