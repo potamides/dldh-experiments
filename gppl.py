@@ -4,6 +4,7 @@ from glob import glob
 from os import getcwd
 from os.path import join, realpath, dirname, exists
 from sentence_transformers import SentenceTransformer
+from csv import reader
 import logging
 import numpy as np
 # this is necessary because gppl code uses absolute imports
@@ -37,13 +38,13 @@ def load_dataset():
     prefs_train = []
     sents = []
 
-    for filename in glob(join(POEM_FOLDER, "*.tsv")):
+    for filename in glob(join(POEM_FOLDER, "*.csv")):
 
-        with open(filename, 'r') as f:
-            categories = f.readline().strip("\n").split("\t")[2:]
+        with open(filename, newline='') as f:
+            lines = reader(f, dialect="unix")
+            categories = next(lines)[2:]
 
-            for line in f.readlines():
-                line = line.split("\t")
+            for line in lines:
                 for text in line[0:2]:
                     if text not in sents:
                         sents.append(text)

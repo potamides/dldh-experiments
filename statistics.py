@@ -3,16 +3,17 @@ from os.path import join
 from itertools import chain
 from collections import Counter, defaultdict
 from scipy.stats import pearsonr
+from csv import reader
 
 POEM_FOLDER = "poems"
 
 def compute_correlation():
     labels = defaultdict(list)
-    with open(join(POEM_FOLDER, "poems_200 - poems_200.tsv")) as f:
-        categories = f.readline().strip("\n").split("\t")[2:]
+    with open(join(POEM_FOLDER, "poems_200 - poems_200.csv")) as f:
+        lines = reader(f, dialect="unix")
+        categories = next(lines)[2:]
 
-        for line in f.readlines():
-            line = line.split("\t")
+        for line in lines:
             pair = tuple(line[0:2])
             annotations = line[2:]
             for idx, annotation in enumerate(annotations):
@@ -29,6 +30,11 @@ def compute_correlation():
     tuples = [(pair1, pair2) for pair1 in pairs for pair2 in pairs if pair1 != pair2]
 
     for (category1, labels1), (category2, labels2) in tuples:
+        duplicate = (category2, labels2), (category1, labels1)
+        if duplicate in tuples:
+            tuples.remove(duplicate)
+
+    for (category1, labels1), (category2, labels2) in tuples:
         print(f"* Pearson correlation between categories {category1} and {category2}: {pearsonr(labels1, labels2)[0]}")
 
 
@@ -39,13 +45,12 @@ def compute_statistics():
     unique_tuples = set()
     category_counter = defaultdict(Counter)
 
-    for filename in glob(join(POEM_FOLDER, "*.tsv")):
-        print(filename)
-        with open(filename) as f:
-            categories = f.readline().strip("\n").split("\t")[2:]
+    for filename in glob(join(POEM_FOLDER, "*.csv")):
+        with open(filename, newline='') as f:
+            lines = reader(f, dialect="unix")
+            categories = next(lines)[2:]
 
-            for line in f.readlines():
-                line = line.split("\t")
+            for line in lines:
                 pair = tuple(line[0:2])
                 annotations = line[2:]
                 unique_poems.update(pair)

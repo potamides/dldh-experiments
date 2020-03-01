@@ -2,6 +2,7 @@ from glob import glob
 from os import getcwd
 from os.path import join
 from collections import Counter, OrderedDict
+from csv import reader
 
 POEM_FOLDER = "poems"
 
@@ -10,10 +11,11 @@ def load_dataset():
     most_negative = OrderedDict()
     total = OrderedDict()
 
-    for filename in glob(join(POEM_FOLDER, "*.tsv")):
-        with open(filename, 'r') as f:
-            for line in f.readlines()[1:]:
-                line = line.split("\t")
+    for filename in glob(join(POEM_FOLDER, "*.csv")):
+        with open(filename, newline='') as f:
+            lines = reader(f, dialect="unix")
+            next(lines)
+            for line in lines:
                 left_poem, right_poem = line[0:2]
                 labels = line[2:]
                 for poem in [left_poem, right_poem]:

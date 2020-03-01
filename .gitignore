@@ -1,4 +1,4 @@
-*.tsv
+*.csv
 .venv
 tmp
 models/*
