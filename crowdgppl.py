@@ -14,7 +14,8 @@ from code_crowdgppl.python.models.collab_pref_learning_svi import CollabPrefLear
 from metrics import get_alliteration_scores, get_readability_scores, get_rhyme_scores
 
 EMBEDDINGS_FILE = join("embeddings", "embeddings.pkl")
-MODEL_FILE = join("models", "crowdgppl_model.pkl")
+MEAN_MODEL_FILE = join("models", "mean_crowdgppl_model.pkl")
+MAP_MODEL_FILE = join("models", "MAP_crowdgppl_model.pkl")
 POEM_FOLDER = "poems"
 
 
@@ -86,7 +87,7 @@ def load_dataset():
     return person_train_idx, a1_sent_idx, a2_sent_idx, sent_features, prefs_train, ndims
 
 
-def train_model():
+def train_model(filename, optimize=False):
     # Train a model...
     person_train_idx, a1_train, a2_train, sent_features, prefs_train, ndims = load_dataset()
 
@@ -95,24 +96,33 @@ def train_model():
 
     model.max_iter = 2000
 
-    model.fit(person_train_idx, a1_train, a2_train, sent_features, prefs_train, optimize=False,
+    model.fit(person_train_idx, a1_train, a2_train, sent_features, prefs_train, optimize=optimize,
               use_median_ls=True, input_type='zero-centered')
 
     logging.info("**** Completed training GPPL ****")
 
     # Save the model in case we need to reload it
 
-    with open(MODEL_FILE, 'wb') as fh:
+    with open(filename, 'wb') as fh:
         pickle.dump(model, fh)
 
 
 def compute_scores():
-    if not exists(MODEL_FILE):
+    if not exists(MEAN_MODEL_FILE):
         print("CrowdGPPL: no trained model found")
         return 0
-    with open(MODEL_FILE, 'rb') as fh:
+    with open(MEAN_MODEL_FILE, 'rb') as fh:
         model = pickle.load(fh)
         return model.predict_t()
 
+def get_lengthscales():
+    if not exists(MAP_MODEL_FILE):
+        print("CrowdGPPL: no trained model found")
+        return 0
+    with open(MAP_MODEL_FILE, 'rb') as fh:
+        model = pickle.load(fh)
+        return model.ls
+
 if __name__ == "__main__":
-    train_model()
+    train_model(MEAN_MODEL_FILE)
+    train_model(MAP_MODEL_FILE, optimize=True)

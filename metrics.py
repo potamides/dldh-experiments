@@ -93,6 +93,6 @@ def get_alliteration_scores(poems: str) -> float:
 def get_readability_scores(poems: str) -> float:
     scores = list()
     for poem in poems:
-        scores.append(flesch_reading_ease(poem))
+        scores.append(flesch_reading_ease(poem) / 121.22) # divided by max
 
     return np.expand_dims(np.asarray(scores), axis=1)
