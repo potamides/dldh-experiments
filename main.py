@@ -18,8 +18,8 @@ def linear_regression(x, y):
 def plot_gppl():
     crowdgppl_scores = np.squeeze(crowdgppl.compute_scores())
     gppl_scores = np.squeeze(gppl.compute_scores())
-    print(f"Mean of absolute GPPL scores: {np.mean(np.abs(gppl_scores))}")
-    print(f"Mean of absolute crowdGPPL scores: {np.mean(np.abs(crowdgppl_scores))}")
+    print(f"Range of GPPL scores: [{np.mean(gppl_scores[gppl_scores < 0])}, {np.mean(gppl_scores[gppl_scores >= 0])}]")
+    print(f"Range of crowdGPPL scores: [{np.mean(crowdgppl_scores[crowdgppl_scores < 0])}, {np.mean(crowdgppl_scores[crowdgppl_scores >= 0])}]")
     plt.scatter(crowdgppl_scores, gppl_scores)
     plt.plot(*linear_regression(crowdgppl_scores, gppl_scores), c="red")
     plt.xlabel("crowdGPPL scores")
