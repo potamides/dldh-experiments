@@ -21,7 +21,7 @@ def compute_correlation():
                 if annotation.strip() == "1":
                     label = 1
                 elif annotation.strip() == "2":
-                    label = 2
+                    label = -1
                 else:
                     label = 0
                 labels[categories[idx]].append(label)
