@@ -10,12 +10,16 @@ def load_dataset():
     most_positive = OrderedDict()
     most_negative = OrderedDict()
     total = OrderedDict()
+    sents = list()
 
     for filename in glob(join(POEM_FOLDER, "*.csv")):
         with open(filename, newline='') as f:
             lines = reader(f, dialect="unix")
             next(lines)
             for line in lines:
+                for text in line[0:2]:
+                    if text not in sents:
+                        sents.append(text)
                 left_poem, right_poem = line[0:2]
                 labels = line[2:]
                 for poem in [left_poem, right_poem]:
@@ -35,10 +39,10 @@ def load_dataset():
                         total[left_poem] += 1
 
 
-    return most_positive, most_negative, total
+    return most_positive, most_negative, total, sents
 
 def compute_scores():
-    most_positive, most_negative, total = load_dataset()
+    most_positive, most_negative, total, _ = load_dataset()
     scores = list()
     for poem in most_positive.keys():
         scores.append((most_positive[poem] - most_negative[poem]) /

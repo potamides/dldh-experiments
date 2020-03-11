@@ -6,6 +6,21 @@ from sys import path
 import matplotlib.pyplot as plt
 import numpy as np
 
+def get_best_poems():
+    for name, model in (("CrowdGPPL", crowdgppl), ("GPPL", gppl), ("BWS", bws)):
+        poems = tuple(model.load_dataset())[-1]
+        scores = np.squeeze(model.compute_scores())
+        both = sorted(zip(scores, poems), reverse=True, key=lambda x: x[0])
+
+        print(f"Best {name} poems:")
+        for score, poem in  both[:5]:
+            print(f"Score: {score}")
+            print(poem.replace(" \\\\ ", "\n"))
+        print(f"Worst {name} poems:")
+        for score, poem in  both[-5:]:
+            print(f"Score: {score}")
+            print(poem.replace(" \\\\ ", "\n"))
+
 def linear_regression(x, y):
     gradient, intercept, r_value, p_value, std_err = linregress(x,y)
     mn=np.min(x)
@@ -53,6 +68,7 @@ def compute_correlation():
         print(f"Correlation between {type1} and {type2}: {correlation[0]}")
 
 if __name__ == "__main__":
+    get_best_poems()
     compute_correlation()
     plot_gppl()
     plot_lengthscales()

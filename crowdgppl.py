@@ -84,12 +84,12 @@ def load_dataset():
     a2_sent_idx = np.array(a2_sent_idx, dtype=int)
     prefs_train = np.array(prefs_train, dtype=float)
 
-    return person_train_idx, a1_sent_idx, a2_sent_idx, sent_features, prefs_train, ndims
+    return person_train_idx, a1_sent_idx, a2_sent_idx, sent_features, prefs_train, ndims, sents
 
 
 def train_model(filename, optimize=False):
     # Train a model...
-    person_train_idx, a1_train, a2_train, sent_features, prefs_train, ndims = load_dataset()
+    person_train_idx, a1_train, a2_train, sent_features, prefs_train, ndims, _ = load_dataset()
 
     model = CollabPrefLearningSVI( ndims, shape_s0=2, rate_s0=200, use_lb=True,
             use_common_mean_t=True, ls=None)
