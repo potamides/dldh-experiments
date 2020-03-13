@@ -1,6 +1,7 @@
 import gppl
 import crowdgppl
 import bws
+from statistics import get_real_poems
 from scipy.stats import spearmanr, linregress
 from sys import path
 import matplotlib.pyplot as plt
@@ -11,14 +12,20 @@ def get_best_poems():
         poems = tuple(model.load_dataset())[-1]
         scores = np.squeeze(model.compute_scores())
         both = sorted(zip(scores, poems), reverse=True, key=lambda x: x[0])
+        real_poems = get_real_poems()
+        real_best100 = len([poem for (score, poem) in both[:100] if poem in real_poems])
+        real_worst100 = len([poem for (score, poem) in both[-100:] if poem in real_poems])
 
-        print(f"Best {name} poems:")
+        print(f"For {name} real poems under the best 100: {real_best100}%")
+        print(f"For {name} real poems under the worst 100: {real_worst100}%")
+
+        print(f"\n## Best {name} poems:")
         for score, poem in  both[:5]:
-            print(f"Score: {score}")
+            print(f"\n### Score: {score}, is real: {poem in real_poems}\n")
             print(poem.replace(" \\\\ ", "\n"))
-        print(f"Worst {name} poems:")
+        print(f"\n## Worst {name} poems:")
         for score, poem in  both[-5:]:
-            print(f"Score: {score}")
+            print(f"\n### Score: {score}, is real: {poem in real_poems}\n")
             print(poem.replace(" \\\\ ", "\n"))
 
 def linear_regression(x, y):

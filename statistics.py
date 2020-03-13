@@ -6,6 +6,51 @@ from scipy.stats import pearsonr
 from csv import reader
 
 POEM_FOLDER = "poems"
+REAL_POEMS_FOLDER = "real_poems"
+
+def is_annotation_correct(left_real, right_real, score):
+    if score.strip() == "1":
+        return left_real and not right_real
+    elif score.strip() == "2":
+        return not left_real and right_real
+    elif score.strip() == "Both":
+        return left_real and right_real
+    elif score.strip() == "None":
+        return not left_real and not right_real
+    else:
+        raise(ValueError("Unknown label: " + score))
+
+def get_real_poems():
+    with open(glob(join(REAL_POEMS_FOLDER, "*"))[0]) as f:
+        return f.read().split("\n\n")
+
+def get_real_percentage():
+    real_poems = set()
+    all_poems = set()
+    correct = 0
+    total = 0
+    poems = get_real_poems()
+
+    for filename in glob(join(POEM_FOLDER, "*.csv")):
+        with open(filename, newline='') as f:
+            lines = reader(f, dialect="unix")
+            next(lines)
+            for line in lines:
+                if line[-1].strip():
+                    if is_annotation_correct(line[0] in poems, line[1] in poems, line[-1]):
+                        correct += 1
+                        total += 1
+                    else:
+                        total += 1
+                        
+                for poem in line[0:2]:
+                    if poem.replace(" \\\\ ", "\n") in poems:
+                        real_poems.add(poem)
+                    all_poems.add(poem)
+
+    print(f"Real Poems in dataset: {100 * len(real_poems) / len(all_poems)}%, ({len(real_poems)})")
+    print(f"Correct annotations for real poems: {100 * correct / total}%")
+
 
 def compute_correlation():
     labels = defaultdict(list)
@@ -107,3 +152,4 @@ if __name__ == "__main__":
     statistics = compute_statistics()
     print_statistics(*statistics)
     compute_correlation()
+    get_real_percentage()

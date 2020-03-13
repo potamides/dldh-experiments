@@ -15,6 +15,8 @@ pip install -r requirements.txt
 ```
 
 Put the annotated poetry data in to the `poems` folder. The files are expected to be in unix-flavored csv format.
+Put the file with real poems in the `real_poems` folder. The file should
+contain all real poems separated with a newline.
 
 ## Experiments
 
