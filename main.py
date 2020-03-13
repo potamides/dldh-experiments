@@ -1,6 +1,7 @@
 import gppl
 import crowdgppl
 import bws
+#from collections import OrderedDict
 from statistics import get_real_poems
 from scipy.stats import spearmanr, linregress
 from sys import path
@@ -8,13 +9,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def get_best_poems():
-    for name, model in (("CrowdGPPL", crowdgppl), ("GPPL", gppl), ("BWS", bws)):
+    #print_this = OrderedDict()
+    for name, model in (("crowdGPPL", crowdgppl), ("GPPL", gppl), ("BWS", bws)):
         poems = tuple(model.load_dataset())[-1]
         scores = np.squeeze(model.compute_scores())
         both = sorted(zip(scores, poems), reverse=True, key=lambda x: x[0])
         real_poems = get_real_poems()
         real_best100 = len([poem for (score, poem) in both[:100] if poem in real_poems])
         real_worst100 = len([poem for (score, poem) in both[-100:] if poem in real_poems])
+        #for idx, (score, poem) in enumerate(both, 1):
+        #    if poem in print_this:
+        #        print_this[poem] += f";{score}"
+        #    else:
+        #        print_this[poem] = f"Stanza_{idx};{score}"
 
         print(f"For {name} real poems under the best 100: {real_best100}%")
         print(f"For {name} real poems under the worst 100: {real_worst100}%")
@@ -22,11 +29,17 @@ def get_best_poems():
         print(f"\n## Best {name} poems:")
         for score, poem in  both[:5]:
             print(f"\n### Score: {score}, is real: {poem in real_poems}\n")
-            print(poem.replace(" \\\\ ", "\n"))
+            print(poem)
         print(f"\n## Worst {name} poems:")
         for score, poem in  both[-5:]:
             print(f"\n### Score: {score}, is real: {poem in real_poems}\n")
-            print(poem.replace(" \\\\ ", "\n"))
+            print(poem)
+
+    #for poem in print_this.keys():
+    #    print_this[poem] += f";{poem in real_poems}"
+
+    #print("Stanza_{idx};{crowdGPPL_score};{GPPL_score};{BWS_score};{real}")
+    #print("\n".join(list(print_this.values())))
 
 def linear_regression(x, y):
     gradient, intercept, r_value, p_value, std_err = linregress(x,y)
@@ -50,6 +63,8 @@ def plot_gppl():
 
 def plot_lengthscales():
     scales = crowdgppl.get_lengthscales()
+    if scales == 0:
+        return
     embedding_scales = np.sort(scales[0:-3])
     manual_feature_scales = scales[-3:]
     positions = np.searchsorted(embedding_scales, manual_feature_scales)
