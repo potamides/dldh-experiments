@@ -22,7 +22,10 @@ def is_annotation_correct(left_real, right_real, score):
 
 def get_real_poems():
     with open(glob(join(REAL_POEMS_FOLDER, "*"))[0]) as f:
-        return f.read().split("\n\n")
+        poems = f.read().split("\n\n")
+        poems = ["\n".join(poem.split("\n")[:4]) if len(poem.split("\n")) > 4
+                else poem for poem in poems]
+        return poems
 
 def get_real_percentage():
     real_poems = set()

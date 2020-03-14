@@ -1,7 +1,7 @@
 import gppl
 import crowdgppl
 import bws
-#from collections import OrderedDict
+from collections import OrderedDict
 from statistics import get_real_poems
 from scipy.stats import spearmanr, linregress
 from sys import path
@@ -22,6 +22,8 @@ def get_best_poems():
         #        print_this[poem] += f";{score}"
         #    else:
         #        print_this[poem] = f"Stanza_{idx};{score}"
+        #        #print(idx)
+        #        #print(poem + "\n")
 
         print(f"For {name} real poems under the best 100: {real_best100}%")
         print(f"For {name} real poems under the worst 100: {real_worst100}%")
@@ -62,8 +64,8 @@ def plot_gppl():
     plt.show()
 
 def plot_lengthscales():
-    scales = crowdgppl.get_lengthscales()
-    if scales == 0:
+    scales = gppl.get_lengthscales()
+    if isinstance(scales, int):
         return
     embedding_scales = np.sort(scales[0:-3])
     manual_feature_scales = scales[-3:]
