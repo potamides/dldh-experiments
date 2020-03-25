@@ -57,22 +57,26 @@ def get_real_percentage():
 
 def compute_correlation():
     labels = defaultdict(list)
-    with open(join(POEM_FOLDER, "poems_200 - poems_200.csv")) as f:
-        lines = reader(f, dialect="unix")
-        categories = next(lines)[2:]
+    for filename in glob(join(POEM_FOLDER, "*.csv")):
+        with open(filename, newline='') as f:
+            lines = reader(f, dialect="unix")
+            categories = next(lines)[2:]
 
-        for line in lines:
-            pair = tuple(line[0:2])
-            annotations = line[2:]
-            for idx, annotation in enumerate(annotations):
-                label = None
-                if annotation.strip() == "1":
-                    label = 1
-                elif annotation.strip() == "2":
-                    label = -1
-                else:
-                    label = 0
-                labels[categories[idx]].append(label)
+            for line in lines:
+                pair = tuple(line[0:2])
+                annotations = line[2:]
+                if len([annotation for annotation in annotations if annotation.strip() != ""]) == 4:
+                    for idx, annotation in enumerate(annotations):
+                        label = None
+                        if annotation.strip() == "1":
+                            label = 1
+                        elif annotation.strip() == "2":
+                            label = -1
+                        elif annotation.strip():
+                            label = 0
+                        else:
+                            continue
+                        labels[categories[idx]].append(label)
 
     pairs = list(labels.items())
     tuples = [(pair1, pair2) for pair1 in pairs for pair2 in pairs if pair1 != pair2]
