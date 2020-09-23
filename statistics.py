@@ -151,7 +151,7 @@ def print_statistics(unique_poems, unique_tuples, category_counter):
                 different_category_annotations += 1
         annotation_counter[different_category_annotations] += 1
 
-    for idx in range(1, len(category_counter.keys())):
+    for idx in range(1, len(category_counter.keys()) + 1):
         print(f"* {annotation_counter[idx]} pairs were annotated in {idx} different categories")
 
 
