@@ -1,6 +1,8 @@
-# dldh-experiments
+# Best-Worst Counting and Gaussian Process Preference Learning: A Detailed Comparison
 
 Code for the experiments conducted in the context of the [Deep Learning & Digital Humanities Seminar](https://github.com/SteffenEger/dldh).
+For a detailed analysis of the results please take a look at this [term paper](https://drive.google.com/uc?print=false&id=1QNawSRoNC_pZG5yC9Vij5n08mwdKdwiD).
+
 ## Setup
 
 Clone the repository:
@@ -34,5 +36,3 @@ Compute various statistics of the dataset:
 ```sh
 python statistics.py
 ```
-
-An overview of the results can be found [here](https://hackmd.io/TqQqj5r1QoS-MoTSbYpQ5g).
